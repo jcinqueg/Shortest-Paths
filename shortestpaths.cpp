@@ -27,7 +27,7 @@ int len( int num ) {
 /**
 * Displays the matrix on the screen formatted as a table.
 */
-void display_table(long** const matrix, const string &label, size_t num_vertices,
+void display_table(long** const matrix, const string &label, int num_vertices,
     const bool use_letters = false) {
 
     cout << label << endl;
@@ -65,13 +65,16 @@ void display_table(long** const matrix, const string &label, size_t num_vertices
 }
 
 int main(int argc, char* const argv[]) {
+    //Declaring fields I'll need for later
     istringstream iss;
+    long** const distance_matrix = new long*();
+    int num_vertices;
 
     if( argc != 2 ) {
         cerr << "Usage: ./shortestpaths <filename>" << endl;
         return 1;
     }
-
+    
     //Creating a stream for the dictionary file
     string filepath( argv[1] );
     ifstream file;
@@ -95,12 +98,31 @@ int main(int argc, char* const argv[]) {
             cerr << "First argument isn't in bounds" << endl;
             return 1;
         }
-        string first_vertex, second_vertex;
-        //size_t edge_weight;
+        char first_vertex, second_vertex;
+        long edge_weight;
         while( !file.eof() ) {
-            //We do what we want with to_insert here
-            getline( file, to_insert );
-            cout << to_insert << endl;
+            getline( file, to_insert ); //Trades to our input via a string object
+            iss.str( to_insert ); //Cannot go directly to an input stream itself
+            //We do what we want with the iss here
+            //Parsing for our expected formats
+            //First vertex
+            if( !(iss >> first_vertex) ) {
+                cerr << "Wasn't a vertex" << endl;
+                return 1;
+            }
+            //Second vertex
+            if( !(iss >> first_vertex) ) {
+                cerr << "Wasn't a vertex" << endl;
+                return 1;
+            }
+            //Ending Weight
+            if( !(iss >> edge_weight ) ) {
+                cerr << "Wasn't a real weight" << endl;
+                return 1;
+            }
+            else {
+                //Use the weight as specified
+            }
         }
     }
     else {
@@ -108,7 +130,10 @@ int main(int argc, char* const argv[]) {
         return 1;
     }
 
-    cout << "looks good to me" << endl;
+    display_table(distance_matrix, "Just for fun", num_vertices );
+
+    //Cleanup
+    //Delete the distance_matrix
 
     return 0; //Everything worked fine
 }
