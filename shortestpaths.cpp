@@ -15,6 +15,7 @@
 #include <iomanip>
 #include <limits>
 #include <vector>
+#include <utility>
 
 using namespace std;
 
@@ -72,6 +73,13 @@ void cleanup( long** const matrix, int length ) {
     delete[] matrix; //Then delete the matrix itself
 }
 
+void cleanup( char** const matrix, int length ) {
+    for( int i = 0; i < length; i++) {
+        delete[] matrix[i]; //Delete each subarray in matrix
+    }
+    delete[] matrix; //Then delete the matrix itself
+}
+
 int count_words( string str ) {
     int count = 0;
     bool was_whitespace = true;
@@ -110,6 +118,30 @@ ostringstream get_word( string str, int num ) {
         }
     }
     return end;
+}
+
+long** floyd(long** mat, int num_vertices) {
+    //Creating the array to be filled with intermediaries
+    long** intermediates = new long*[num_vertices]; //Rows
+    for( int i = 0; i < num_vertices; i++) {
+        intermediates[i] = new long[num_vertices]; //Columns
+        for( int j = 0; j < num_vertices; j++) {
+            intermediates[i][j] = INF; //Each intermediate begins as nothing
+        }
+    }
+    //The long matrix will be altered to contain it's transitive closure
+    for( int k = 0; k < num_vertices; k++) {
+        for( int i = 0; i < num_vertices; i++) {
+            for( int j = 0; j < num_vertices; j++) {
+                if( mat[i][k] != INF && mat[k][j] != INF && mat[i][j] > mat[i][k] + mat[k][j] ) {
+                    //We have some replacing to do
+                    mat[i][j] = mat[i][k] + mat[k][j];
+                    intermediates[i][j] = k;
+                }
+            }
+        }
+    }
+    return intermediates;
 }
 
 int main(int argc, char* const argv[]) {
@@ -154,7 +186,7 @@ int main(int argc, char* const argv[]) {
     for( int i = 0; i < num_vertices; i++) {
         distance_matrix[i] = new long[num_vertices]; //Columns
         for( int j = 0; j < num_vertices; j++) {
-            distance_matrix[i][j] = INF; //Each distance starts out as infinity
+            distance_matrix[i][j] = (i == j) ? 0 : INF; //Each distance starts out as infinity
         }
     }
 
@@ -175,28 +207,24 @@ int main(int argc, char* const argv[]) {
 
         //Starts the parsing loop
         while( !file.eof() ) {
-            /*cout << to_insert << endl;
-            cout << get_word( to_insert, 1).str() << endl;
-            cout << get_word( to_insert, 2).str() << endl;
-            cout << get_word( to_insert, 3).str() << endl;*/
             //Parsing for our expected formats
             //Checking to make sure we have exactly three components
             if( count_words( to_insert ) != 3) {
-                cerr << "Error: Invalid edge data '" << to_insert << "' on line " << line_number << "." << endl;
+                cerr << "Error: Invalid Edge data '" << to_insert << "' on line " << line_number << "." << endl;
                 cleanup( distance_matrix, num_vertices);
                 return 1;
             }
             //Parsing the first vertex
             iss.str( get_word( to_insert, 1).str() );
             if ( !(iss >> first_vertex) || first_vertex < 'A' || first_vertex > ('A' + num_vertices-1)) {
-                cerr << "Error: Starting vertex '" << get_word( to_insert, 1).str() << "' on line " << line_number << " is not among valid values A-D." << endl;
+                cerr << "Error: Starting vertex '" << get_word( to_insert, 1).str() << "' on line " << line_number << " is not among valid values A-" << (char)('A' + num_vertices-1) << "." << endl;
                 cleanup( distance_matrix, num_vertices);
                 return 1;
             }
             //Parsing the ending vertex
             iss.str( get_word( to_insert, 2).str() );
             if ( !(iss >> second_vertex) || second_vertex < 'A' || second_vertex > ('A' + num_vertices-1)) {
-                cerr << "Error: Ending vertex '" << get_word( to_insert, 2).str() << "' on line " << line_number << " is not among valid values A-D." << endl;
+                cerr << "Error: Ending vertex '" << get_word( to_insert, 2).str() << "' on line " << line_number << " is not among valid values A-" << (char)('A' + num_vertices-1) << "." << endl;
                 cleanup( distance_matrix, num_vertices);
                 return 1;
             }
@@ -231,9 +259,12 @@ int main(int argc, char* const argv[]) {
     }
 
     display_table(distance_matrix, "Just for fun", num_vertices );
-
+    long** intermediates = floyd( distance_matrix, num_vertices );
+    display_table( intermediates, "Intermediates", num_vertices, true );
+    display_table(distance_matrix, "Just for fun", num_vertices );
     //Cleanup
     cleanup( distance_matrix, num_vertices); //Delete the distance_matrix
+    cleanup( intermediates, num_vertices );
 
     return 0; //Everything worked fine
 }
