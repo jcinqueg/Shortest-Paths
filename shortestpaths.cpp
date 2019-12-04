@@ -74,6 +74,7 @@ void cleanup( long** const matrix, int length ) {
 int main(int argc, char* const argv[]) {
     //Declaring fields I'll need for later
     istringstream iss;
+    size_t line_number = 0;
     int num_vertices = -1;
 
     if( argc != 2 ) {
@@ -86,7 +87,7 @@ int main(int argc, char* const argv[]) {
     ifstream file;
     file.open(filepath);
     if( !file.is_open() ) { //File was not correctly loaded
-        cerr << "Error: File '" << filepath << "' not found." << endl;
+        cerr << "Error: Cannot open file '" << filepath << "'." << endl;
         return 1;
     }
 
@@ -94,18 +95,16 @@ int main(int argc, char* const argv[]) {
         string to_insert;
         istringstream iss;
         getline(file, to_insert );
+        line_number++;
         iss.str( to_insert );
-        if( !(iss >> num_vertices) ) { //Put the number of vertices into num vertices
-            cerr << "First argument isn't a number" << endl;
-            return 1;
-        }
-        else if( num_vertices < 1 || num_vertices > 26 ) {
-            cerr << "First argument isn't in bounds" << endl;
+        if( !(iss >> num_vertices) || num_vertices < 1 || num_vertices > 26 ) {
+            //Put the number of vertices into num vertices
+            cerr << "Error: Invalid number of vertices '" << num_vertices << "' on line " << line_number << "." << endl;
             return 1;
         }
     }
     else {
-        cerr << "Text file was empty" << endl;
+        cerr << "Error: Text file exists, but was empty." << endl;
         return 1;
     }
 
@@ -126,38 +125,40 @@ int main(int argc, char* const argv[]) {
     //Parse the number of edges into the matrix
     if ( !file.eof() ) {
         string to_insert;
+        string first_input, second_input, third_input;
         char first_vertex, second_vertex;
         long edge_weight;
         while( !file.eof() ) {
             getline( file, to_insert ); //Trades to our input via a string object
+            line_number++; //Increase the line number we are at
             iss.str( to_insert ); //Cannot go directly to an input stream itself
             //Parsing for our expected formats
-            if( !(iss >> first_vertex) ) { //Parse the first vertex
-                cerr << "Wasn't a vertex" << endl;
+            if( !(iss >> first_input) ) { //Parse the first vertex
+                cerr << "Error: Invalid edge data '" << to_insert << "' on line " << line_number << "." << endl;
                 cleanup( distance_matrix, num_vertices);
                 return 1;
             }
-            else if ( first_vertex < 'A' || first_vertex > ('A' + num_vertices-1)) {
+            if( !(iss >> second_input) ) { //Parse the second vertex
+                cerr << "Error: Invalid edge data '" << to_insert << "' on line " << line_number << "." << endl;
+                cleanup( distance_matrix, num_vertices);
+                return 1;
+            }
+            if( !(iss >> third_input ) ) {
+                cerr << "Error: Invalid edge data '" << to_insert << "' on line " << line_number << "." << endl;
+                cleanup( distance_matrix, num_vertices);
+                return 1;
+            }
+            if ( first_vertex < 'A' || first_vertex > ('A' + num_vertices-1)) {
                 cerr << "Bad vertex inserted" << endl;
                 cleanup( distance_matrix, num_vertices);
                 return 1;
             }
-            if( !(iss >> second_vertex) ) { //Parse the second vertex
-                cerr << "Wasn't a vertex" << endl;
-                cleanup( distance_matrix, num_vertices);
-                return 1;
-            }
-            else if ( second_vertex < 'A' || second_vertex > ('A' + num_vertices-1)) {
+            if ( second_vertex < 'A' || second_vertex > ('A' + num_vertices-1)) {
                 cerr << "Bad vertex inserted" << endl;
                 cleanup( distance_matrix, num_vertices);
                 return 1;
             }
             //The Edge Weight
-            if( !(iss >> edge_weight ) ) {
-                cerr << "Wasn't a real weight" << endl;
-                cleanup( distance_matrix, num_vertices);
-                return 1;
-            }
             else {
                 //All the input was correct
                 int row = first_vertex - 'A';
