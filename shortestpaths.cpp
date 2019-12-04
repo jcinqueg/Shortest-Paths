@@ -14,7 +14,6 @@
 #include <algorithm>
 #include <iomanip>
 #include <limits>
-#include <vector>
 #include <utility>
 
 using namespace std;
@@ -142,6 +141,32 @@ long** floyd(long** mat, int num_vertices) {
         }
     }
     return intermediates;
+}
+
+/**
+ * INPUT:
+ *  distances: a 2-dimensional matrix of longs indexed as distances[row][column]. It contains
+ *      the length of the shortest path between two vertices.
+ *  intermediates: a 2-dimensional matrix of longs. The matrix is of longs for convenience, you
+ *      should think of it as a character matrix. at intermediates[row][col] is the vertex that
+ *      serves as the intermediate in the path between the two. This is what you'll be using to
+ *      recurse over in the tree-way he showed during class.
+ *  length: an integer containing the length of each matrix. Each matrix is a square with the same
+ *      amount of rows and columns. Both have exactly length many rows and columns.
+ * OUTPUT TO CONSOLE:
+ *  This function is made to output all paths that can be found, and their minimum distance, as is
+ *  shown with the test cases.
+ * TIPS:
+ *  The vertexes are named by capital letters but are referred to in code by longs and numbers. the
+ *      vertex 'A' is referred to as 0, 'B' as 1, and so on. No vertex should have a value of length
+ *      or greater.
+ *  I recommend writing only one helper function. This function will print everything up until the
+ *      colon, and the helper would print the actual path. Going down the tree is easiest with
+ *      recursion, but it only needs the intermediates table, and two verticies, it doesn't need to
+ *      bother with the rest of the inputs. Doing this in a helper makes it much more manageable.
+ */
+void find_paths( long** const distances, long** const intermediates, int length ) {
+    //TODO
 }
 
 int main(int argc, char* const argv[]) {
