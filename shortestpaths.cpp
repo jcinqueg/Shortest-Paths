@@ -64,11 +64,17 @@ void display_table(long** const matrix, const string &label, int num_vertices,
     cout << endl;
 }
 
+void cleanup( long** const matrix, int length ) {
+    for( int i = 0; i < length; i++) {
+        delete[] matrix[i]; //Delete each subarray in matrix
+    }
+    delete[] matrix; //Then delete the matrix itself
+}
+
 int main(int argc, char* const argv[]) {
     //Declaring fields I'll need for later
     istringstream iss;
-    long** const distance_matrix = new long*();
-    int num_vertices;
+    int num_vertices = -1;
 
     if( argc != 2 ) {
         cerr << "Usage: ./shortestpaths <filename>" << endl;
@@ -89,7 +95,6 @@ int main(int argc, char* const argv[]) {
         istringstream iss;
         getline(file, to_insert );
         iss.str( to_insert );
-        int num_vertices;
         if( !(iss >> num_vertices) ) { //Put the number of vertices into num vertices
             cerr << "First argument isn't a number" << endl;
             return 1;
@@ -98,6 +103,24 @@ int main(int argc, char* const argv[]) {
             cerr << "First argument isn't in bounds" << endl;
             return 1;
         }
+    }
+    else {
+        cerr << "Text file was empty" << endl;
+        return 1;
+    }
+
+    //Once we know the number of vertices, create the matrix
+    long** const distance_matrix = new long*[num_vertices]; //Rows
+    for( int i = 0; i < num_vertices; i++) {
+        distance_matrix[i] = new long[num_vertices]; //Columns
+        for( int j = 0; j < num_vertices; j++) {
+            distance_matrix[i][j] = INF; //Each distance starts out as infinity
+        }
+    }
+
+    //Parse the number of edges into the matrix
+    if ( !file.eof() ) {
+        string to_insert;
         char first_vertex, second_vertex;
         long edge_weight;
         while( !file.eof() ) {
@@ -108,16 +131,19 @@ int main(int argc, char* const argv[]) {
             //First vertex
             if( !(iss >> first_vertex) ) {
                 cerr << "Wasn't a vertex" << endl;
+                cleanup( distance_matrix, num_vertices);
                 return 1;
             }
             //Second vertex
-            if( !(iss >> first_vertex) ) {
+            if( !(iss >> second_vertex) ) {
                 cerr << "Wasn't a vertex" << endl;
+                cleanup( distance_matrix, num_vertices);
                 return 1;
             }
             //Ending Weight
             if( !(iss >> edge_weight ) ) {
                 cerr << "Wasn't a real weight" << endl;
+                cleanup( distance_matrix, num_vertices);
                 return 1;
             }
             else {
@@ -126,14 +152,15 @@ int main(int argc, char* const argv[]) {
         }
     }
     else {
-        cerr << "File was empty" << endl;
+        cerr << "No lines were included" << endl;
+        cleanup( distance_matrix, num_vertices);
         return 1;
     }
 
     display_table(distance_matrix, "Just for fun", num_vertices );
 
     //Cleanup
-    //Delete the distance_matrix
+    cleanup( distance_matrix, num_vertices); //Delete the distance_matrix
 
     return 0; //Everything worked fine
 }
