@@ -14,6 +14,7 @@
 #include <algorithm>
 #include <iomanip>
 #include <limits>
+#include <vector>
 
 using namespace std;
 
@@ -71,6 +72,46 @@ void cleanup( long** const matrix, int length ) {
     delete[] matrix; //Then delete the matrix itself
 }
 
+int count_words( string str ) {
+    int count = 0;
+    bool was_whitespace = true;
+    for( auto ch = str.begin(); ch <= str.end(); ++ch) {
+        char check = *ch;
+        if( isspace( check ) ) {
+            was_whitespace = true;
+        }
+        else {
+            if( was_whitespace ) {
+                count++;
+            }
+            was_whitespace = false;
+        }
+    }
+    return count;
+}
+
+ostringstream get_word( string str, int num ) {
+    int count = 0;
+    bool was_whitespace = true;
+    ostringstream end;
+    for( auto ch = str.begin(); ch <= str.end(); ++ch) {
+        char check = *ch;
+        if( isspace( check ) ) {
+            was_whitespace = true;
+        }
+        else {
+            if( was_whitespace ) {
+                count++;
+            }
+            was_whitespace = false;
+            if( count == num ) {
+                end << check;
+            }
+        }
+    }
+    return end;
+}
+
 int main(int argc, char* const argv[]) {
     //Declaring fields I'll need for later
     istringstream iss;
@@ -99,7 +140,7 @@ int main(int argc, char* const argv[]) {
         iss.str( to_insert );
         if( !(iss >> num_vertices) || num_vertices < 1 || num_vertices > 26 ) {
             //Put the number of vertices into num vertices
-            cerr << "Error: Invalid number of vertices '" << num_vertices << "' on line " << line_number << "." << endl;
+            cerr << "Error: Invalid number of vertices '" << to_insert << "' on line " << line_number << "." << endl;
             return 1;
         }
     }
@@ -125,53 +166,62 @@ int main(int argc, char* const argv[]) {
     //Parse the number of edges into the matrix
     if ( !file.eof() ) {
         string to_insert;
-        string first_input, second_input, third_input;
         char first_vertex, second_vertex;
         long edge_weight;
+        //Iterates to the next line
+        getline( file, to_insert ); //Trades to our input via a string object
+        line_number++; //Increase the line number we are at
+        iss.str( to_insert ); //Cannot go directly to an input stream itself
+
+        //Starts the parsing loop
         while( !file.eof() ) {
+            /*cout << to_insert << endl;
+            cout << get_word( to_insert, 1).str() << endl;
+            cout << get_word( to_insert, 2).str() << endl;
+            cout << get_word( to_insert, 3).str() << endl;*/
+            //Parsing for our expected formats
+            //Checking to make sure we have exactly three components
+            if( count_words( to_insert ) != 3) {
+                cerr << "Error: Invalid edge data '" << to_insert << "' on line " << line_number << "." << endl;
+                cleanup( distance_matrix, num_vertices);
+                return 1;
+            }
+            //Parsing the first vertex
+            iss.str( get_word( to_insert, 1).str() );
+            if ( !(iss >> first_vertex) || first_vertex < 'A' || first_vertex > ('A' + num_vertices-1)) {
+                cerr << "Error: Starting vertex '" << get_word( to_insert, 1).str() << "' on line " << line_number << " is not among valid values A-D." << endl;
+                cleanup( distance_matrix, num_vertices);
+                return 1;
+            }
+            //Parsing the ending vertex
+            iss.str( get_word( to_insert, 2).str() );
+            if ( !(iss >> second_vertex) || second_vertex < 'A' || second_vertex > ('A' + num_vertices-1)) {
+                cerr << "Error: Ending vertex '" << get_word( to_insert, 2).str() << "' on line " << line_number << " is not among valid values A-D." << endl;
+                cleanup( distance_matrix, num_vertices);
+                return 1;
+            }
+            //Parsing the edge weight
+            iss.str( get_word( to_insert, 3).str() );
+            if ( !(iss >> edge_weight) || edge_weight < 1) {
+                cerr << "Error: Invalid edge weight '" << get_word( to_insert, 3).str() << "' on line " << line_number << "." << endl;
+                cleanup( distance_matrix, num_vertices);
+                return 1;
+            }
+            //All the input data is correct for an edge
+            int row = first_vertex - 'A';
+            int col = second_vertex - 'A';
+            if (distance_matrix[row][col] != INF) {
+                cerr << "Edge has been repeated" << endl;
+                cleanup( distance_matrix, num_vertices);
+                return 1;
+            }
+            else {
+                distance_matrix[row][col] = edge_weight;
+            }
+            //Iterates to the next line
             getline( file, to_insert ); //Trades to our input via a string object
             line_number++; //Increase the line number we are at
             iss.str( to_insert ); //Cannot go directly to an input stream itself
-            //Parsing for our expected formats
-            if( !(iss >> first_input) ) { //Parse the first vertex
-                cerr << "Error: Invalid edge data '" << to_insert << "' on line " << line_number << "." << endl;
-                cleanup( distance_matrix, num_vertices);
-                return 1;
-            }
-            if( !(iss >> second_input) ) { //Parse the second vertex
-                cerr << "Error: Invalid edge data '" << to_insert << "' on line " << line_number << "." << endl;
-                cleanup( distance_matrix, num_vertices);
-                return 1;
-            }
-            if( !(iss >> third_input ) ) {
-                cerr << "Error: Invalid edge data '" << to_insert << "' on line " << line_number << "." << endl;
-                cleanup( distance_matrix, num_vertices);
-                return 1;
-            }
-            if ( first_vertex < 'A' || first_vertex > ('A' + num_vertices-1)) {
-                cerr << "Bad vertex inserted" << endl;
-                cleanup( distance_matrix, num_vertices);
-                return 1;
-            }
-            if ( second_vertex < 'A' || second_vertex > ('A' + num_vertices-1)) {
-                cerr << "Bad vertex inserted" << endl;
-                cleanup( distance_matrix, num_vertices);
-                return 1;
-            }
-            //The Edge Weight
-            else {
-                //All the input was correct
-                int row = first_vertex - 'A';
-                int col = second_vertex - 'A';
-                if (distance_matrix[row][col] != INF) {
-                    cerr << "Edge has been repeated" << endl;
-                    cleanup( distance_matrix, num_vertices);
-                    return 1;
-                }
-                else {
-                    distance_matrix[row][col] = edge_weight;
-                }
-            }
         }
     }
     else {
