@@ -118,6 +118,11 @@ int main(int argc, char* const argv[]) {
         }
     }
 
+    /*
+    distance_matrix contains a 2d long matrix of INF of num_vertices by num_vertices size
+    num_vertices contains the number of vertices
+    */
+
     //Parse the number of edges into the matrix
     if ( !file.eof() ) {
         string to_insert;
@@ -126,28 +131,45 @@ int main(int argc, char* const argv[]) {
         while( !file.eof() ) {
             getline( file, to_insert ); //Trades to our input via a string object
             iss.str( to_insert ); //Cannot go directly to an input stream itself
-            //We do what we want with the iss here
             //Parsing for our expected formats
-            //First vertex
-            if( !(iss >> first_vertex) ) {
+            if( !(iss >> first_vertex) ) { //Parse the first vertex
                 cerr << "Wasn't a vertex" << endl;
                 cleanup( distance_matrix, num_vertices);
                 return 1;
             }
-            //Second vertex
-            if( !(iss >> second_vertex) ) {
+            else if ( first_vertex < 'A' || first_vertex > ('A' + num_vertices-1)) {
+                cerr << "Bad vertex inserted" << endl;
+                cleanup( distance_matrix, num_vertices);
+                return 1;
+            }
+            if( !(iss >> second_vertex) ) { //Parse the second vertex
                 cerr << "Wasn't a vertex" << endl;
                 cleanup( distance_matrix, num_vertices);
                 return 1;
             }
-            //Ending Weight
+            else if ( second_vertex < 'A' || second_vertex > ('A' + num_vertices-1)) {
+                cerr << "Bad vertex inserted" << endl;
+                cleanup( distance_matrix, num_vertices);
+                return 1;
+            }
+            //The Edge Weight
             if( !(iss >> edge_weight ) ) {
                 cerr << "Wasn't a real weight" << endl;
                 cleanup( distance_matrix, num_vertices);
                 return 1;
             }
             else {
-                //Use the weight as specified
+                //All the input was correct
+                int row = first_vertex - 'A';
+                int col = second_vertex - 'A';
+                if (distance_matrix[row][col] != INF) {
+                    cerr << "Edge has been repeated" << endl;
+                    cleanup( distance_matrix, num_vertices);
+                    return 1;
+                }
+                else {
+                    distance_matrix[row][col] = edge_weight;
+                }
             }
         }
     }
