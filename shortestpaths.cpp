@@ -1,10 +1,11 @@
 /*******************************************************************************
- * Name    : shortestpaths.cpp
- * Author  : John Cinquegrana and Megha Mansuria
- * Version : 1.0
- * Date    : January 9, 2016
- * Description : Does some shortest path nonsense.
- * Pledge : I pledge my honor that I have abided by the Stevens Honor System.
+ * Name         : shortestpaths.cpp
+ * Author       : John Cinquegrana and Megha Mansuria
+ * Version      : 1.0
+ * Date         : January 9, 2016
+ * Description  : Reieves a directed graph as input and determines all the shortest
+ *                  possible paths that can be taken within that text file.
+ * Pledge       : I pledge my honor that I have abided by the Stevens Honor System.
  ******************************************************************************/
 
 
@@ -20,14 +21,17 @@ using namespace std;
 
 long INF = numeric_limits<long>::max();
 
+/**
+ * Returns the number of digits required to write out a number in base ten.
+ */
 int len( int num ) {
     if( num < 10) return 1;
     return 1 + len( num / 10);
 }
 
 /**
-* Displays the matrix on the screen formatted as a table.
-*/
+ * Displays the matrix on the screen formatted as a table.
+ */
 void display_table(long** const matrix, const string &label, int num_vertices,
     const bool use_letters = false) {
 
@@ -65,6 +69,9 @@ void display_table(long** const matrix, const string &label, int num_vertices,
     cout << endl;
 }
 
+/**
+ * Deletes the two dimensional array that is passed into it.
+ */
 void cleanup( long** const matrix, int length ) {
     for( int i = 0; i < length; i++) {
         delete[] matrix[i]; //Delete each subarray in matrix
@@ -72,6 +79,9 @@ void cleanup( long** const matrix, int length ) {
     delete[] matrix; //Then delete the matrix itself
 }
 
+/**
+ * Deletes the two dimensional array that is passed into it.
+ */
 void cleanup( char** const matrix, int length ) {
     for( int i = 0; i < length; i++) {
         delete[] matrix[i]; //Delete each subarray in matrix
@@ -79,6 +89,9 @@ void cleanup( char** const matrix, int length ) {
     delete[] matrix; //Then delete the matrix itself
 }
 
+/**
+ * Counts the number of words, seperated by whitespace, that appear in a string.
+ */
 int count_words( string str ) {
     int count = 0;
     bool was_whitespace = true;
@@ -97,6 +110,10 @@ int count_words( string str ) {
     return count;
 }
 
+/**
+ * Returns an OSS object that contains the specified word in the string. Words are
+ * groups of non-whitespace characters and are delimited by whitespace.
+ */
 ostringstream get_word( string str, int num ) {
     int count = 0;
     bool was_whitespace = true;
@@ -119,6 +136,10 @@ ostringstream get_word( string str, int num ) {
     return end;
 }
 
+/**
+ * Employs floyd's algorithm to find a matrix consisting of the intermediary values of paths.
+ * Changes the passed in mat matrix to be that matrix's transitive closure.
+ */
 long** floyd(long** mat, int num_vertices) {
     //Creating the array to be filled with intermediaries
     long** intermediates = new long*[num_vertices]; //Rows
@@ -169,6 +190,10 @@ void find_paths( long** const distances, long** const intermediates, int length 
     //TODO
 }
 
+/**
+ * Parses the input data into a single matrix than passes it through floyd's algorithm
+ * and prints the results.
+ */
 int main(int argc, char* const argv[]) {
     //Declaring fields I'll need for later
     istringstream iss;
