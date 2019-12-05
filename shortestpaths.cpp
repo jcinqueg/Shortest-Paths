@@ -104,26 +104,8 @@ int count_words( string str ) {
  * Returns an OSS object that contains the specified word in the string. Words are
  * groups of non-whitespace characters and are delimited by whitespace.
  */
-ostringstream get_word( string str, int num ) {
-    int count = 0;
-    bool was_whitespace = true;
-    ostringstream end;
-    for( auto ch = str.begin(); ch <= str.end(); ++ch) {
-        char check = *ch;
-        if( isspace( check ) ) {
-            was_whitespace = true;
-        }
-        else {
-            if( was_whitespace ) {
-                count++;
-            }
-            was_whitespace = false;
-            if( count == num ) {
-                end << check;
-            }
-        }
-    }
-    return end;
+string get_word( string str, int num ) {
+    return "fun";
 }
 
 /**
@@ -240,8 +222,10 @@ int main(int argc, char* const argv[]) {
         if( !(iss >> num_vertices) || num_vertices < 1 || num_vertices > 26 ) {
             //Put the number of vertices into num vertices
             cerr << "Error: Invalid number of vertices '" << to_insert << "' on line " << line_number << "." << endl;
+            iss.clear();
             return 1;
         }
+        iss.clear();
     }
     else {
         cerr << "Error: Text file exists, but was empty." << endl;
@@ -266,12 +250,12 @@ int main(int argc, char* const argv[]) {
     //  string to_insert was declared above
     char first_vertex, second_vertex;
     long edge_weight;
+    string theword;
     //Iterates to the next line
 
     //Starts the parsing loop
     while( getline( file, to_insert ) ) {
         line_number++; //Increase the line number we are at
-        iss.str( to_insert ); //Cannot go directly to an input stream itself
         //Parsing for our expected formats
         //Checking to make sure we have exactly three components
         if( count_words( to_insert ) != 3) {
@@ -279,27 +263,38 @@ int main(int argc, char* const argv[]) {
             cleanup( distance_matrix, num_vertices);
             return 1;
         }
+        iss.str( to_insert );
         //Parsing the first vertex
-        iss.str( get_word( to_insert, 1).str() );
-        if ( !(iss >> first_vertex) || first_vertex < 'A' || first_vertex > ('A' + num_vertices-1)) {
-            cerr << "Error: Starting vertex '" << get_word( to_insert, 1).str() << "' on line " << line_number << " is not among valid values A-" << (char)('A' + num_vertices-1) << "." << endl;
+        //string theword = get_word( to_insert, 1).str();
+        getline(iss, theword, ' ');
+        first_vertex = theword[0];
+        if ( theword.length() != 1 || first_vertex < 'A' || first_vertex > ('A' + num_vertices-1)) {
+            cerr << "Error: Starting vertex '" << theword << "' on line " << line_number << " is not among valid values A-" << (char)('A' + num_vertices-1) << "." << endl;
             cleanup( distance_matrix, num_vertices);
             return 1;
         }
+        getline(iss, theword, ' ');
         //Parsing the ending vertex
-        iss.str( get_word( to_insert, 2).str() );
-        if ( !(iss >> second_vertex) || second_vertex < 'A' || second_vertex > ('A' + num_vertices-1)) {
-            cerr << "Error: Ending vertex '" << get_word( to_insert, 2).str() << "' on line " << line_number << " is not among valid values A-" << (char)('A' + num_vertices-1) << "." << endl;
+        //theword = get_word( to_insert, 2).str();
+        second_vertex = theword[0];
+        if ( theword.length() != 1 || second_vertex < 'A' || second_vertex > ('A' + num_vertices-1)) {
+            cerr << "Error: Ending vertex '" << theword << "' on line " << line_number << " is not among valid values A-" << (char)('A' + num_vertices-1) << "." << endl;
             cleanup( distance_matrix, num_vertices);
             return 1;
         }
         //Parsing the edge weight
-        iss.str( get_word( to_insert, 3).str() );
+        //The iss should only have edgeweight left
+        // iss.str( get_word( to_insert, 3) );
+        getline(iss, theword, ' ');
+        iss.clear();
+        iss.str( theword );
         if ( !(iss >> edge_weight) || edge_weight < 1) {
-            cerr << "Error: Invalid edge weight '" << get_word( to_insert, 3).str() << "' on line " << line_number << "." << endl;
+            cerr << "Error: Invalid edge weight '" << theword << "' on line " << line_number << "." << endl;
             cleanup( distance_matrix, num_vertices);
+            iss.clear();
             return 1;
         }
+        iss.clear();
         //All the input data is correct for an edge
         int row = first_vertex - 'A';
         int col = second_vertex - 'A';
@@ -313,7 +308,6 @@ int main(int argc, char* const argv[]) {
         }
         //Iterates to the next line
     }
-
     display_table(distance_matrix, "Distance matrix:", num_vertices );
     long** intermediates = floyd( distance_matrix, num_vertices );
     display_table( distance_matrix, "Path lengths:", num_vertices );
@@ -323,6 +317,6 @@ int main(int argc, char* const argv[]) {
     //Cleanup
     cleanup( distance_matrix, num_vertices); //Delete the distance_matrix
     cleanup( intermediates, num_vertices );
-
+    
     return 0; //Everything worked fine
 }

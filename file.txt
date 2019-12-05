@@ -4,7 +4,7 @@ A D 10
 B A 7
 B C 5
 B D 1
-C B 3
+C B fun with boisf
 D A 2
-D B sixteen
-D C 6
+D B 6
+D C -4
