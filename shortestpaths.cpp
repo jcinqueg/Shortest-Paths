@@ -322,6 +322,8 @@ int main(int argc, char* const argv[]) {
     long** intermediates = floyd( distance_matrix, num_vertices );
     display_table( intermediates, "Intermediates", num_vertices, true );
     display_table(distance_matrix, "Just for fun", num_vertices );
+    //Finding paths
+    find_paths( distance_matrix, intermediates, num_vertices );
     //Cleanup
     cleanup( distance_matrix, num_vertices); //Delete the distance_matrix
     cleanup( intermediates, num_vertices );
