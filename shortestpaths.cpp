@@ -80,16 +80,6 @@ void cleanup( long** const matrix, int length ) {
 }
 
 /**
- * Deletes the two dimensional array that is passed into it.
- */
-void cleanup( char** const matrix, int length ) {
-    for( int i = 0; i < length; i++) {
-        delete[] matrix[i]; //Delete each subarray in matrix
-    }
-    delete[] matrix; //Then delete the matrix itself
-}
-
-/**
  * Counts the number of words, seperated by whitespace, that appear in a string.
  */
 int count_words( string str ) {
@@ -164,6 +154,16 @@ long** floyd(long** mat, int num_vertices) {
     return intermediates;
 }
 
+void find_paths_helper( long** const intermediates, long from, long to, bool print_first = false ) {
+    //Find the intermediary
+    long inter = intermediates[from][to];
+    if( inter == INF ) cout << (char)('A'+from) << " -> " << (char)('A'+to);
+    else {
+        find_paths_helper( intermediates, from, inter );
+        find_paths_helper( intermediates, inter, to );
+    }
+}
+
 /**
  * INPUT:
  *  distances: a 2-dimensional matrix of longs indexed as distances[row][column]. It contains
@@ -187,7 +187,17 @@ long** floyd(long** mat, int num_vertices) {
  *      bother with the rest of the inputs. Doing this in a helper makes it much more manageable.
  */
 void find_paths( long** const distances, long** const intermediates, int length ) {
-    //TODO
+    for( long first = 0; first < length; first++ ) {
+        for( long second = 0; second < length; second++ ) {
+            if ( distances[first][second] < INF ) {
+                //The path exists
+                find_paths_helper( intermediates, first, second );
+            }
+            else {
+                //The path does not exist
+            }
+        }
+    }
 }
 
 /**
