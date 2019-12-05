@@ -24,9 +24,9 @@ long INF = numeric_limits<long>::max();
 /**
  * Returns the number of digits required to write out a number in base ten.
  */
-int len( int num ) {
+int len( long num ) {
     if( num < 10) return 1;
-    return 1 + len( num / 10);
+    else return 1 + len( num / 10);
 }
 
 /**
@@ -154,10 +154,12 @@ long** floyd(long** mat, int num_vertices) {
     return intermediates;
 }
 
-void find_paths_helper( long** const intermediates, long from, long to, bool print_first = false ) {
+void find_paths_helper( long** const intermediates, long from, long to ) {
     //Find the intermediary
     long inter = intermediates[from][to];
-    if( inter == INF ) cout << (char)('A'+from) << " -> " << (char)('A'+to);
+    if( inter == INF )  {
+        cout << " -> " << (char)('A'+to);
+    }
     else {
         find_paths_helper( intermediates, from, inter );
         find_paths_helper( intermediates, inter, to );
@@ -191,9 +193,14 @@ void find_paths( long** const distances, long** const intermediates, int length 
         for( long second = 0; second < length; second++ ) {
             if ( distances[first][second] < INF ) {
                 //The path exists
-                find_paths_helper( intermediates, first, second );
+                cout << (char)('A'+first) << " -> " << (char)('A'+second)
+                << ", distance: " << distances[first][second] << ", path: " << (char)('A'+first);
+                if( first != second ) find_paths_helper( intermediates, first, second );
+                cout << endl;
             }
             else {
+                cout << (char)('A'+first) << " -> " << (char)('A'+second)
+                << ", distance: infinity, path: none" << endl;
                 //The path does not exist
             }
         }
@@ -224,10 +231,10 @@ int main(int argc, char* const argv[]) {
         return 1;
     }
 
-    if ( !file.eof() ) {
-        string to_insert;
-        istringstream iss;
-        getline(file, to_insert );
+    string to_insert;
+     // istringstream iss was declared above
+
+    if ( getline(file, to_insert ) ) {
         line_number++;
         iss.str( to_insert );
         if( !(iss >> num_vertices) || num_vertices < 1 || num_vertices > 26 ) {
@@ -256,72 +263,61 @@ int main(int argc, char* const argv[]) {
     */
 
     //Parse the number of edges into the matrix
-    if ( !file.eof() ) {
-        string to_insert;
-        char first_vertex, second_vertex;
-        long edge_weight;
-        //Iterates to the next line
-        getline( file, to_insert ); //Trades to our input via a string object
+    //  string to_insert was declared above
+    char first_vertex, second_vertex;
+    long edge_weight;
+    //Iterates to the next line
+
+    //Starts the parsing loop
+    while( getline( file, to_insert ) ) {
         line_number++; //Increase the line number we are at
         iss.str( to_insert ); //Cannot go directly to an input stream itself
-
-        //Starts the parsing loop
-        while( !file.eof() ) {
-            //Parsing for our expected formats
-            //Checking to make sure we have exactly three components
-            if( count_words( to_insert ) != 3) {
-                cerr << "Error: Invalid Edge data '" << to_insert << "' on line " << line_number << "." << endl;
-                cleanup( distance_matrix, num_vertices);
-                return 1;
-            }
-            //Parsing the first vertex
-            iss.str( get_word( to_insert, 1).str() );
-            if ( !(iss >> first_vertex) || first_vertex < 'A' || first_vertex > ('A' + num_vertices-1)) {
-                cerr << "Error: Starting vertex '" << get_word( to_insert, 1).str() << "' on line " << line_number << " is not among valid values A-" << (char)('A' + num_vertices-1) << "." << endl;
-                cleanup( distance_matrix, num_vertices);
-                return 1;
-            }
-            //Parsing the ending vertex
-            iss.str( get_word( to_insert, 2).str() );
-            if ( !(iss >> second_vertex) || second_vertex < 'A' || second_vertex > ('A' + num_vertices-1)) {
-                cerr << "Error: Ending vertex '" << get_word( to_insert, 2).str() << "' on line " << line_number << " is not among valid values A-" << (char)('A' + num_vertices-1) << "." << endl;
-                cleanup( distance_matrix, num_vertices);
-                return 1;
-            }
-            //Parsing the edge weight
-            iss.str( get_word( to_insert, 3).str() );
-            if ( !(iss >> edge_weight) || edge_weight < 1) {
-                cerr << "Error: Invalid edge weight '" << get_word( to_insert, 3).str() << "' on line " << line_number << "." << endl;
-                cleanup( distance_matrix, num_vertices);
-                return 1;
-            }
-            //All the input data is correct for an edge
-            int row = first_vertex - 'A';
-            int col = second_vertex - 'A';
-            if (distance_matrix[row][col] != INF) {
-                cerr << "Edge has been repeated" << endl;
-                cleanup( distance_matrix, num_vertices);
-                return 1;
-            }
-            else {
-                distance_matrix[row][col] = edge_weight;
-            }
-            //Iterates to the next line
-            getline( file, to_insert ); //Trades to our input via a string object
-            line_number++; //Increase the line number we are at
-            iss.str( to_insert ); //Cannot go directly to an input stream itself
+        //Parsing for our expected formats
+        //Checking to make sure we have exactly three components
+        if( count_words( to_insert ) != 3) {
+            cerr << "Error: Invalid edge data '" << to_insert << "' on line " << line_number << "." << endl;
+            cleanup( distance_matrix, num_vertices);
+            return 1;
         }
-    }
-    else {
-        cerr << "No lines were included" << endl;
-        cleanup( distance_matrix, num_vertices);
-        return 1;
+        //Parsing the first vertex
+        iss.str( get_word( to_insert, 1).str() );
+        if ( !(iss >> first_vertex) || first_vertex < 'A' || first_vertex > ('A' + num_vertices-1)) {
+            cerr << "Error: Starting vertex '" << get_word( to_insert, 1).str() << "' on line " << line_number << " is not among valid values A-" << (char)('A' + num_vertices-1) << "." << endl;
+            cleanup( distance_matrix, num_vertices);
+            return 1;
+        }
+        //Parsing the ending vertex
+        iss.str( get_word( to_insert, 2).str() );
+        if ( !(iss >> second_vertex) || second_vertex < 'A' || second_vertex > ('A' + num_vertices-1)) {
+            cerr << "Error: Ending vertex '" << get_word( to_insert, 2).str() << "' on line " << line_number << " is not among valid values A-" << (char)('A' + num_vertices-1) << "." << endl;
+            cleanup( distance_matrix, num_vertices);
+            return 1;
+        }
+        //Parsing the edge weight
+        iss.str( get_word( to_insert, 3).str() );
+        if ( !(iss >> edge_weight) || edge_weight < 1) {
+            cerr << "Error: Invalid edge weight '" << get_word( to_insert, 3).str() << "' on line " << line_number << "." << endl;
+            cleanup( distance_matrix, num_vertices);
+            return 1;
+        }
+        //All the input data is correct for an edge
+        int row = first_vertex - 'A';
+        int col = second_vertex - 'A';
+        if (distance_matrix[row][col] != INF) {
+            cerr << "Edge has been repeated" << endl;
+            cleanup( distance_matrix, num_vertices);
+            return 1;
+        }
+        else {
+            distance_matrix[row][col] = edge_weight;
+        }
+        //Iterates to the next line
     }
 
-    display_table(distance_matrix, "Just for fun", num_vertices );
+    display_table(distance_matrix, "Distance matrix:", num_vertices );
     long** intermediates = floyd( distance_matrix, num_vertices );
-    display_table( intermediates, "Intermediates", num_vertices, true );
-    display_table(distance_matrix, "Just for fun", num_vertices );
+    display_table( distance_matrix, "Path lengths:", num_vertices );
+    display_table( intermediates, "Intermediate vertices:", num_vertices, true );
     //Finding paths
     find_paths( distance_matrix, intermediates, num_vertices );
     //Cleanup
